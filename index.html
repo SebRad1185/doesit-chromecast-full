@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Workout Timer</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1" type="text/javascript"></script>
+<style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      background: #eef2f5;
+      color: #333;
+      -webkit-font-smoothing: antialiased;
+      transition: background 0.3s ease;
+    }
+    .container {
+      width: 90%;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      position: relative;
+    }
+    header {
+      background: linear-gradient(135deg, #2c3e50, #34495e);
+      color: #fff;
+      padding: 20px 30px;
+      border-radius: 8px;
+      text-align: center;
+      margin-bottom: 25px;
+      position: relative;
+    }
+    header h1 {
+      margin: 0;
+      font-weight: 600;
+      font-size: 2em;
+    }
+    .user-info {
+      margin-top: 8px;
+      font-size: 0.9em;
+      opacity: 0.9;
+      display: inline-block;
+    }
+    #switch-user-btn {
+      background: #e74c3c;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 6px 10px;
+      font-size: 0.8em;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+    #user-select-view {
+      display: none;
+    }
+    #user-select-view .action-btn {
+      background: #2ecc71;
+      color: #fff;
+      margin: 5px 0;
+    }
+    .user-options {
+      margin-top: 20px;
+    }
+    .user-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fff;
+      padding: 10px;
+      border-radius: 6px;
+      margin: 5px 0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .user-item span.user-name {
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .add-user-form {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .add-user-form input {
+      padding: 8px;
+      font-size: 1em;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      flex: 1;
+    }
+    #cast-button-container {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+    }
+    .action-btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      font-size: 1em;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      color: #fff;
+    }
+    .action-btn:active {
+      transform: scale(0.98);
+    }
+    .create-workout-btn, .start-btn, .reset-btn {
+      background: #2ecc71;
+    }
+    .show-exercises-btn, .edit-btn, .delete-btn, .back-btn, .toggle-mode-btn {
+      background: #2c3e50;
+    }
+    .action-btn:hover {
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .home-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+    hr {
+      border: 0;
+      height: 1px;
+      background: #ddd;
+      margin: 20px 0;
+    }
+    .workout-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .workout-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      transition: transform 0.2s ease;
+    }
+    .workout-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    }
+    .workout-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .workout-title {
+      font-size: 1.3em;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+    .workout-description {
+      font-size: 0.95em;
+      color: #7f8c8d;
+      margin-bottom: 12px;
+    }
+    .workout-meta {
+      font-size: 0.9em;
+      color: #95a5a6;
+      margin-bottom: 15px;
+    }
+    .workout-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .timer-view {
+      display: none;
+    }
+    .screen-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 25px;
+    }
+    .screen {
+      background: #2c3e50;
+      color: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      min-height: 200px;
+      position: relative;
+      overflow: hidden;
+    }
+    .screen h3 {
+      margin-top: 0;
+      font-size: 1.2em;
+      opacity: 0.9;
+    }
+    .exercises-container {
+      margin-top: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .exercise-wrapper {
+      background: rgba(255,255,255,0.1);
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .exercise-wrapper .timer {
+      font-size: 1.6em;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+    .progress-container {
+      width: 100%;
+      background: rgba(255,255,255,0.2);
+      border-radius: 5px;
+      margin-top: 5px;
+      height: 8px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: #2ecc71;
+      border-radius: 5px;
+      transition: width 0.3s ease;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .modal-content {
+      background: #fff;
+      border-radius: 12px;
+      padding: 25px;
+      width: 95%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      animation: slideIn 0.4s ease;
+    }
+    @keyframes slideIn {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .modal-title {
+      font-size: 1.5em;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 1.8em;
+      color: #7f8c8d;
+      cursor: pointer;
+    }
+    .input-group {
+      margin-bottom: 15px;
+    }
+    .input-group label {
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: block;
+    }
+    .input-group input, 
+    .input-group textarea, 
+    .input-group select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 1em;
+    }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .modal-step {
+      display: none;
+    }
+    #exercises-list-view {
+      display: none;
+    }
+    #exercises-list-container {
+      margin-top: 20px;
+    }
+    .exercise-item {
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .exercise-details {
+      font-size: 1em;
+      font-weight: 500;
+      color: #2c3e50;
+    }
+    @media (min-width: 768px) and (max-width: 1024px) {
+      .container {
+        padding: 25px;
+      }
+      header h1 {
+        font-size: 2.2em;
+      }
+      .action-btn {
+        font-size: 1.1em;
+      }
+    }
+    #workout-modal .action-btn,
+    #exercise-modal .action-btn {
+      background: #2c3e50;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+<div class="container" id="user-select-view">
+<header>
+<h1>Select User</h1>
+</header>
+<div class="user-options" id="user-list-container"></div>
+<div class="add-user-form">
+<input id="new-user-name" placeholder="Enter user name" type="text"/>
+<button class="action-btn" id="add-user-btn">Add User</button>
+</div>
+</div>
+<div class="container" id="workout-list-view">
+<header>
+<h1>Workout Timer</h1>
+<div>
+<span class="user-info">User: <span id="current-user-name">None</span></span>
+<button id="switch-user-btn">Switch User</button>
+</div>
+<div id="cast-button-container"></div>
+</header>
+<div class="home-buttons">
+<button class="create-workout-btn action-btn" id="create-workout-btn">Create New Workout</button>
+<button class="show-exercises-btn action-btn" id="show-exercises-btn">Show Exercises</button>
+</div>
+<hr/>
+<div class="workout-list" id="workout-list"></div>
+</div>
+<div class="container" id="exercises-list-view">
+<header>
+<h1>Saved Exercises</h1>
+</header>
+<div id="exercises-list-container"></div>
+<button class="back-btn action-btn" id="back-to-home-btn">Back to Home</button>
+</div>
+<div class="container timer-view" id="timer-view">
+<button class="back-btn action-btn" id="back-btn">← Back to Workouts</button>
+<div id="cast-controls" style="display: flex; gap: 12px; margin: 12px 0;"></div><div class="screen-container">
+<div class="screen" id="screen-1">
+<h3>Screen 1</h3>
+<div class="exercises-container"></div>
+</div>
+<div class="screen" id="screen-2">
+<h3>Screen 2</h3>
+<div class="exercises-container"></div>
+</div>
+<div class="screen" id="screen-3">
+<h3>Screen 3</h3>
+<div class="exercises-container"></div>
+</div>
+<div class="screen" id="screen-4">
+<h3>Screen 4</h3>
+<button class="toggle-mode-btn action-btn" data-screen="4">Switch to Time Display</button>
+<div class="exercises-container"></div>
+</div>
+</div>
+<div class="home-buttons">
+<button class="start-btn action-btn" id="start-btn">Start Workout</button>
+<button class="reset-btn action-btn" disabled="" id="reset-btn">Reset</button>
+</div>
+</div>
+<!-- Workout Modal (Multi-Step Process) -->
+<div class="modal" id="workout-modal">
+<div class="modal-content">
+<div class="modal-header">
+<div class="modal-title">Create New Workout</div>
+<button class="close-btn" id="close-modal">×</button>
+</div>
+<!-- Step 1: Basic Workout Info -->
+<div class="modal-step" id="step-1">
+<div class="input-group">
+<label for="workout-name">Workout Name</label>
+<input id="workout-name" placeholder="e.g., Full Body Routine" type="text"/>
+</div>
+<div class="input-group">
+<label for="workout-description">Description (optional)</label>
+<textarea id="workout-description" placeholder="Describe your workout" rows="3"></textarea>
+</div>
+</div>
+<!-- Step 2: Add Exercises -->
+<div class="modal-step" id="step-2">
+<!-- BEGIN NEW BLOCK -->
+<div class="input-group" style="margin-bottom: 15px;">
+<label for="saved-exercise-select">Choose saved exercise</label>
+<div style="display:flex;gap:10px;">
+<select id="saved-exercise-select" style="flex:2;">
+<option value="">-- Select saved exercise --</option>
+</select>
+<button class="action-btn" id="add-saved-exercise-btn" style="flex:1;" type="button">Add</button>
+</div>
+</div>
+<!-- END NEW BLOCK -->
+<div id="exercise-fields">
+<div class="input-group exercise-field">
+<label>Exercise 1</label>
+<div style="display: flex; gap: 10px;">
+<input class="exercise-name" placeholder="Exercise name" style="flex: 2;" type="text"/>
+<input class="exercise-duration" min="1" placeholder="Duration (sec)" style="flex: 1;" type="number" value="30"/>
+<select class="exercise-screen" style="flex: 1;">
+<option value="1">Screen 1</option>
+<option value="2">Screen 2</option>
+<option value="3">Screen 3</option>
+<option value="4">Screen 4</option>
+</select>
+<button class="action-btn save-exercise-template-btn" style="margin-left:10px;">Save</button>
+</div>
+</div>
+</div>
+<div style="margin-top: 15px;">
+<button class="action-btn" id="add-exercise-btn">+ Add Exercise</button>
+</div>
+</div>
+<div class="modal-step" id="step-3">
+<div class="input-group">
+<label for="restDurationInput">Rest Duration (sec)</label>
+<input id="restDurationInput" min="1" type="number" value="15"/>
+</div>
+<div class="input-group">
+<label for="restCountInput">Number of Rests</label>
+<input id="restCountInput" min="1" type="number" value="1"/>
+</div>
+<p style="font-size: 0.9em; color: #7f8c8d;">Configure the rest periods between your exercises.</p>
+</div>
+<div class="modal-step" id="step-4">
+<h3>Review Your Workout</h3>
+<div id="workout-overview"></div>
+</div>
+<div class="modal-actions">
+<button class="action-btn cancel-btn" id="cancel-workout">Cancel</button>
+<button class="action-btn" id="back-step" style="display:none;">Back</button>
+<button class="action-btn" id="next-step">Next</button>
+<button class="action-btn save-btn" id="confirm-workout" style="display:none;">Confirm Workout</button>
+</div>
+</div>
+</div>
+<!-- Exercise Edit Modal -->
+<div class="modal" id="exercise-modal">
+<div class="modal-content">
+<div class="modal-header">
+<div class="modal-title">Edit Exercise</div>
+<button class="close-btn" id="close-exercise-modal">×</button>
+</div>
+<div class="input-group">
+<label for="edit-exercise-name">Exercise Name</label>
+<input id="edit-exercise-name" placeholder="Exercise name" type="text"/>
+</div>
+<div class="input-group">
+<label for="edit-exercise-duration">Duration (sec)</label>
+<input id="edit-exercise-duration" min="1" type="number" value="30"/>
+</div>
+<div class="input-group">
+<label for="edit-exercise-screen">Screen</label>
+<select id="edit-exercise-screen">
+<option value="1">Screen 1</option>
+<option value="2">Screen 2</option>
+<option value="3">Screen 3</option>
+<option value="4">Screen 4</option>
+</select>
+</div>
+<div class="modal-actions">
+<button class="action-btn cancel-btn" id="cancel-edit-exercise">Cancel</button>
+<button class="action-btn save-btn" id="save-edit-exercise">Save Exercise</button>
+</div>
+</div>
+</div>
+<script>
+    // Chromecast Integration:
+    window['__onGCastApiAvailable'] = function(isAvailable) {
+      if (isAvailable) {
+        initializeCastApi();
+      }
+    };
+    function initializeCastApi() {
+      cast.framework.CastContext.getInstance().setOptions({
+        receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
+        autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
+      });
+      document.getElementById('cast-button-container').innerHTML = '<google-cast-button style="width:32px; height:32px;"></google-cast-button>';
+    }
+
+    // --- App State Variables & DOM References ---
+    let workouts = [];
+    let currentWorkout = null;
+    let timers = {};
+    let exerciseCount = 1;
+    let editingWorkoutId = null;
+    let savedExercises = [];
+    let editingSavedExerciseIndex = null;
+    let globalRestSettings = null;
+    let currentStep = 1;
+    let users = [];
+    let currentUser = null;
+
+    // DOM Views
+    const userSelectView = document.getElementById('user-select-view');
+    const workoutListView = document.getElementById('workout-list-view');
+    const exercisesListView = document.getElementById('exercises-list-view');
+    const timerView = document.getElementById('timer-view');
+    const userListContainer = document.getElementById('user-list-container');
+    const newUserNameInput = document.getElementById('new-user-name');
+    const addUserBtn = document.getElementById('add-user-btn');
+    const currentUserNameSpan = document.getElementById('current-user-name');
+    const switchUserBtn = document.getElementById('switch-user-btn');
+    const workoutList = document.getElementById('workout-list');
+    const createWorkoutBtn = document.getElementById('create-workout-btn');
+    const showExercisesBtn = document.getElementById('show-exercises-btn');
+    const backToHomeBtn = document.getElementById('back-to-home-btn');
+    const backBtn = document.getElementById('back-btn');
+    const startBtn = document.getElementById('start-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const workoutModal = document.getElementById('workout-modal');
+    const closeModalBtn = document.getElementById('close-modal');
+    const cancelWorkoutBtn = document.getElementById('cancel-workout');
+    const backStepBtn = document.getElementById('back-step');
+    const nextStepBtn = document.getElementById('next-step');
+    const confirmWorkoutBtn = document.getElementById('confirm-workout');
+    const addExerciseBtn = document.getElementById('add-exercise-btn');
+    const exerciseFields = document.getElementById('exercise-fields');
+    const workoutNameInput = document.getElementById('workout-name');
+    const workoutDescriptionInput = document.getElementById('workout-description');
+    const exercisesListContainer = document.getElementById('exercises-list-container');
+    const workoutOverviewDiv = document.getElementById('workout-overview');
+    const exerciseModal = document.getElementById('exercise-modal');
+    const closeExerciseModalBtn = document.getElementById('close-exercise-modal');
+    const cancelEditExerciseBtn = document.getElementById('cancel-edit-exercise');
+    const saveEditExerciseBtn = document.getElementById('save-edit-exercise');
+    const editExerciseNameInput = document.getElementById('edit-exercise-name');
+    const editExerciseDurationInput = document.getElementById('edit-exercise-duration');
+    const editExerciseScreenSelect = document.getElementById('edit-exercise-screen');
+
+    // User Management
+    function loadUsersFromLocalStorage() {
+      const stored = localStorage.getItem('users');
+      users = stored ? JSON.parse(stored) : [];
+    }
+    function saveUsersToLocalStorage() {
+      localStorage.setItem('users', JSON.stringify(users));
+    }
+    function renderUserList() {
+      userListContainer.innerHTML = '';
+      if (!users.length) {
+        userListContainer.innerHTML = '<p>No users found. Please add a user.</p>';
+        return;
+      }
+      users.forEach(user => {
+        const userDiv = document.createElement('div');
+        userDiv.className = 'user-item';
+        userDiv.innerHTML = `<span class="user-name">${user.name}</span>
+                              <button class="action-btn delete-user-btn" data-id="${user.id}">Delete</button>`;
+        userDiv.querySelector('.user-name').addEventListener('click', () => selectUser(user));
+        userDiv.querySelector('.delete-user-btn').addEventListener('click', (e) => {
+          e.stopPropagation();
+          deleteUser(user.id);
+        });
+        userListContainer.appendChild(userDiv);
+      });
+    }
+    function addUser() {
+      const name = newUserNameInput.value.trim();
+      if (!name) { alert('Enter a valid user name.'); return; }
+      const newUser = { id: Date.now(), name };
+      users.push(newUser);
+      saveUsersToLocalStorage();
+      renderUserList();
+      newUserNameInput.value = '';
+    }
+    function deleteUser(id) {
+      if (confirm('Delete this user?')) {
+        users = users.filter(u => u.id !== id);
+        saveUsersToLocalStorage();
+        renderUserList();
+      }
+    }
+    function selectUser(user) {
+      currentUser = user;
+      localStorage.setItem('currentUser', JSON.stringify(user));
+      currentUserNameSpan.textContent = user.name;
+      userSelectView.style.display = 'none';
+      workoutListView.style.display = 'block';
+    }
+    switchUserBtn.addEventListener('click', () => {
+      workoutListView.style.display = 'none';
+      userSelectView.style.display = 'block';
+    });
+    addUserBtn.addEventListener('click', addUser);
+
+    // --- Local Storage for Workouts and Exercises ---
+    function saveWorkoutsToLocalStorage() {
+      localStorage.setItem('workouts', JSON.stringify(workouts));
+    }
+    function loadWorkoutsFromLocalStorage() {
+      const stored = localStorage.getItem('workouts');
+      if (stored) {
+        workouts = JSON.parse(stored);
+      } else {
+        initSampleWorkouts();
+      }
+    }
+    function loadSavedExercises() {
+      const saved = localStorage.getItem('savedExercises');
+      savedExercises = saved ? JSON.parse(saved) : [];
+    }
+    function saveSavedExercises() {
+      localStorage.setItem('savedExercises', JSON.stringify(savedExercises));
+    }
+
+    // --- Render Functions for Workouts and Exercises ---
+    function renderWorkoutList() {
+      workoutList.innerHTML = '';
+      if (!workouts.length) {
+        workoutList.innerHTML = '<p>No workouts created yet.</p>';
+        return;
+      }
+      workouts.forEach(workout => {
+        const card = document.createElement('div');
+        card.className = 'workout-card';
+        const exCount = workout.exercises.filter(ex => ex.type === 'exercise').length;
+        const restCount = workout.exercises.filter(ex => ex.type === 'rest').length;
+        const totalDuration = workout.exercises.reduce((sum, ex) => sum + ex.duration, 0);
+        const minutes = Math.floor(totalDuration / 60);
+        const seconds = totalDuration % 60;
+        const durationStr = minutes ? `${minutes}:${seconds.toString().padStart(2, '0')}` : `${seconds} sec`;
+        card.innerHTML = `
+          <div class="workout-header">
+            <div class="workout-title">${workout.name}</div>
+          </div>
+          <div class="workout-description">${workout.description || 'No description provided'}</div>
+          <div class="workout-meta">${exCount} exercises | ${restCount} rest(s) | ${durationStr} | ${workout.date}</div>
+          <div class="workout-actions">
+            <button class="action-btn start-btn" data-id="${workout.id}">Start</button>
+            <button class="action-btn edit-btn" data-id="${workout.id}">Edit</button>
+            <button class="action-btn delete-btn" data-id="${workout.id}">Delete</button>
+          </div>
+        `;
+        workoutList.appendChild(card);
+      });
+      document.querySelectorAll('.start-btn').forEach(btn => {
+        btn.addEventListener('click', e => startWorkout(parseInt(e.target.getAttribute('data-id'))));
+      });
+      document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+          const id = parseInt(e.target.getAttribute('data-id'));
+          if (confirm('Delete this workout?')) {
+            workouts = workouts.filter(w => w.id !== id);
+            saveWorkoutsToLocalStorage();
+            renderWorkoutList();
+          }
+        });
+      });
+      document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', e => editWorkout(parseInt(e.target.getAttribute('data-id'))));
+      });
+    }
+    function renderExercisesListPage() {
+      exercisesListContainer.innerHTML = '';
+      if (!savedExercises.length) {
+        exercisesListContainer.innerHTML = '<p>No saved exercises.</p>';
+        return;
+      }
+      savedExercises.forEach((ex, index) => {
+        const item = document.createElement('div');
+        item.className = 'exercise-item';
+        item.innerHTML = `
+          <div class="exercise-details">${ex.name} - ${ex.duration} sec - Screen ${ex.screen}</div>
+          <div>
+            <button class="action-btn edit-btn" data-index="${index}">Edit</button>
+            <button class="action-btn delete-btn" data-index="${index}">Delete</button>
+          </div>
+        `;
+        exercisesListContainer.appendChild(item);
+      });
+      document.querySelectorAll('#exercises-list-container .edit-btn').forEach(btn => {
+        btn.addEventListener('click', e => openEditExerciseModal(parseInt(e.target.getAttribute('data-index'))));
+      });
+      document.querySelectorAll('#exercises-list-container .delete-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+          const idx = parseInt(e.target.getAttribute('data-index'));
+          if (confirm('Delete this saved exercise?')) {
+            savedExercises.splice(idx, 1);
+            saveSavedExercises();
+            renderExercisesListPage();
+          }
+        });
+      });
+    }
+    function initSampleWorkouts() {
+      workouts = [{
+        id: 1,
+        name: "Full Body Workout",
+        description: "A complete routine to train every muscle group.",
+        date: new Date().toLocaleDateString(),
+        exercises: [
+          { type: "exercise", name: "Pushups", duration: 30, screen: "1" },
+          { type: "exercise", name: "Squats", duration: 30, screen: "1" },
+          { type: "exercise", name: "Pull-ups", duration: 30, screen: "2" },
+          { type: "exercise", name: "Plank", duration: 30, screen: "3" },
+          { type: "rest", name: "Rest", duration: 15, screen: "all" }
+        ]
+      }];
+      saveWorkoutsToLocalStorage();
+      renderWorkoutList();
+    }
+
+    // --- Timer and Screen Functions, unchanged ---
+
+    function startWorkout(id) {
+      currentWorkout = workouts.find(w => w.id === id);
+      if (!currentWorkout) return;
+      for (let i = 1; i <= 4; i++) updateScreen(i, []);
+      Object.values(timers).forEach(t => clearInterval(t));
+      timers = {};
+      workoutListView.style.display = 'none';
+      timerView.style.display = 'block';
+      startBtn.disabled = false;
+      resetBtn.disabled = true;
+    }
+    function updateScreen(screenNum, exercisesArr) {
+      const screen = document.getElementById(`screen-${screenNum}`);
+      const container = screen.querySelector('.exercises-container');
+      container.innerHTML = '';
+      if (!exercisesArr.length) {
+        container.textContent = 'No content';
+        return;
+      }
+      exercisesArr.forEach((ex, idx) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'exercise-wrapper';
+        wrapper.innerHTML = `
+          <div class="exercise-display">${ex.name}</div>
+          <div class="timer">${formatTime(ex.remaining || ex.duration)}</div>
+          <div class="progress-container">
+            <div class="progress-bar" style="width: 0%;"></div>
+          </div>
+        `;
+        container.appendChild(wrapper);
+      });
+    }
+    function runExerciseRound() {
+      return new Promise(resolve => {
+        let active = [];
+        for (let i = 1; i <= 4; i++) {
+          const scrExercises = currentWorkout.exercises.filter(ex => ex.type === 'exercise' && ex.screen === String(i));
+          updateScreen(i, scrExercises);
+          scrExercises.forEach((ex, idx) => {
+            let rem = ex.duration;
+            const wrapper = document.querySelector(`#screen-${i} .exercise-wrapper:nth-child(${idx + 1})`);
+            if (!wrapper) return;
+            const timerEl = wrapper.querySelector('.timer');
+            const progressBar = wrapper.querySelector('.progress-bar');
+            active.push(new Promise(res => {
+              timers[`screen-${i}-${idx}`] = setInterval(() => {
+                rem--;
+                timerEl.textContent = formatTime(rem);
+                let prog = ((ex.duration - rem) / ex.duration) * 100;
+                progressBar.style.width = prog + '%';
+                if (rem <= 0) {
+                  clearInterval(timers[`screen-${i}-${idx}`]);
+                  res();
+                }
+              }, 1000);
+            }));
+          });
+        }
+        Promise.all(active).then(() => resolve());
+      });
+    }
+    function runRestPhase() {
+      return new Promise(resolve => {
+        for (let i = 1; i <= 4; i++) {
+          updateScreen(i, [{ name: "Rest", duration: globalRestSettings.duration, remaining: globalRestSettings.duration, type: "rest" }]);
+          let rem = globalRestSettings.duration;
+          const wrapper = document.querySelector(`#screen-${i} .exercise-wrapper`);
+          if (!wrapper) continue;
+          const timerEl = wrapper.querySelector('.timer');
+          const progressBar = wrapper.querySelector('.progress-bar');
+          timers[`screen-${i}-rest`] = setInterval(() => {
+            rem--;
+            timerEl.textContent = formatTime(rem);
+            let prog = ((globalRestSettings.duration - rem) / globalRestSettings.duration) * 100;
+            progressBar.style.width = prog + '%';
+            if (rem <= 0) clearInterval(timers[`screen-${i}-rest`]);
+          }, 1000);
+        }
+        setTimeout(() => resolve(), globalRestSettings.duration * 1000);
+      });
+    }
+    async function startFullSequence() {
+      startBtn.disabled = true;
+      resetBtn.disabled = false;
+      Object.values(timers).forEach(t => clearInterval(t));
+      timers = {};
+      const rounds = globalRestSettings ? globalRestSettings.count + 1 : 1;
+      for (let round = 1; round <= rounds; round++) {
+        await runExerciseRound();
+        if (round < rounds && globalRestSettings) await runRestPhase();
+      }
+      for (let i = 1; i <= 4; i++) {
+        document.querySelector(`#screen-${i} .exercises-container`).textContent = 'Workout Complete';
+      }
+    }
+    function resetTimer() {
+      Object.values(timers).forEach(t => clearInterval(t));
+      timers = {};
+      if (currentWorkout) {
+        for (let i = 1; i <= 4; i++) {
+          const scrExercises = currentWorkout.exercises.filter(ex => ex.type === 'exercise' && ex.screen === String(i));
+          updateScreen(i, scrExercises);
+        }
+      }
+      startBtn.disabled = false;
+      resetBtn.disabled = true;
+    }
+    function formatTime(sec) {
+      const mins = Math.floor(sec / 60);
+      const secs = sec % 60;
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    // --- Workout and Modal Functions ---
+    function openModal() {
+      currentStep = 1;
+      showStep(currentStep);
+      if (!editingWorkoutId) {
+        workoutNameInput.value = '';
+        workoutDescriptionInput.value = '';
+        exerciseFields.innerHTML = `
+          <div class="input-group exercise-field">
+            <label>Exercise 1</label>
+            <div style="display: flex; gap: 10px;">
+              <input type="text" class="exercise-name" placeholder="Exercise name" style="flex: 2;">
+              <input type="number" class="exercise-duration" placeholder="Duration (sec)" min="1" value="30" style="flex: 1;">
+              <select class="exercise-screen" style="flex: 1;">
+                <option value="1">Screen 1</option>
+                <option value="2">Screen 2</option>
+                <option value="3">Screen 3</option>
+                <option value="4">Screen 4</option>
+              </select>
+              <button class="action-btn save-exercise-template-btn" style="margin-left:10px;">Save</button>
+            </div>
+          </div>
+        `;
+        exerciseCount = 1;
+        globalRestSettings = null;
+      }
+      populateSavedExerciseSelect(); // <<== New: update dropdown
+      workoutModal.style.display = 'flex';
+    }
+    function closeModal() {
+      workoutModal.style.display = 'none';
+      editingWorkoutId = null;
+      document.querySelector('.modal-title').textContent = "Create New Workout";
+    }
+    function editWorkout(id) {
+      const workout = workouts.find(w => w.id === id);
+      if (!workout) return;
+      document.querySelector('.modal-title').textContent = "Edit Workout";
+      workoutNameInput.value = workout.name;
+      workoutDescriptionInput.value = workout.description;
+      exerciseFields.innerHTML = "";
+      exerciseCount = 0;
+      workout.exercises.forEach(ex => {
+        if (ex.type === 'exercise') {
+          exerciseCount++;
+          const field = document.createElement('div');
+          field.className = 'input-group exercise-field';
+          field.innerHTML = `
+            <label>Exercise ${exerciseCount}</label>
+            <div style="display: flex; gap: 10px;">
+              <input type="text" class="exercise-name" placeholder="Exercise name" value="${ex.name}" style="flex: 2;">
+              <input type="number" class="exercise-duration" placeholder="Duration (sec)" min="1" value="${ex.duration}" style="flex: 1;">
+              <select class="exercise-screen" style="flex: 1;">
+                <option value="1" ${ex.screen === "1" ? "selected" : ""}>Screen 1</option>
+                <option value="2" ${ex.screen === "2" ? "selected" : ""}>Screen 2</option>
+                <option value="3" ${ex.screen === "3" ? "selected" : ""}>Screen 3</option>
+                <option value="4" ${ex.screen === "4" ? "selected" : ""}>Screen 4</option>
+              </select>
+              <button class="action-btn save-exercise-template-btn" style="margin-left:10px;">Save</button>
+            </div>
+          `;
+          exerciseFields.appendChild(field);
+        }
+      });
+      const restEx = workout.exercises.find(ex => ex.type === 'rest');
+      globalRestSettings = restEx ? { duration: restEx.duration, count: workout.exercises.filter(ex => ex.type === 'rest').length } : null;
+      editingWorkoutId = id;
+      openModal();
+    }
+    function saveWorkout() {
+      const name = workoutNameInput.value.trim();
+      if (!name) { alert('Enter a workout name'); return; }
+      let exercises = [];
+      document.querySelectorAll('.exercise-field').forEach(field => {
+        const exName = field.querySelector('.exercise-name').value.trim();
+        const duration = parseInt(field.querySelector('.exercise-duration').value);
+        const screen = field.querySelector('.exercise-screen').value;
+        if (exName && duration > 0) exercises.push({ type: 'exercise', name: exName, duration, screen });
+      });
+      if (!exercises.length) { alert('Add at least one exercise'); return; }
+      if (globalRestSettings) {
+        for (let i = 0; i < globalRestSettings.count; i++) {
+          exercises.push({ type: 'rest', name: 'Rest', duration: globalRestSettings.duration, screen: 'all' });
+        }
+      }
+      if (editingWorkoutId) {
+        const idx = workouts.findIndex(w => w.id === editingWorkoutId);
+        if (idx >= 0) {
+          workouts[idx] = {
+            id: editingWorkoutId,
+            name,
+            description: workoutDescriptionInput.value.trim(),
+            date: new Date().toLocaleDateString(),
+            exercises
+          };
+        }
+        editingWorkoutId = null;
+        document.querySelector('.modal-title').textContent = "Create New Workout";
+      } else {
+        workouts.push({
+          id: Date.now(),
+          name,
+          description: workoutDescriptionInput.value.trim(),
+          date: new Date().toLocaleDateString(),
+          exercises
+        });
+      }
+      saveWorkoutsToLocalStorage();
+      renderWorkoutList();
+      closeModal();
+    }
+    function generateWorkoutOverview() {
+      let overviewHTML = `<h4>${workoutNameInput.value.trim()}</h4>
+                          <p>${workoutDescriptionInput.value.trim()}</p>`;
+      document.querySelectorAll('.exercise-field').forEach((field, idx) => {
+        const exName = field.querySelector('.exercise-name').value.trim();
+        const exDuration = field.querySelector('.exercise-duration').value;
+        const exScreen = field.querySelector('.exercise-screen').value;
+        overviewHTML += `<p><strong>Exercise ${idx+1}:</strong> ${exName} - ${exDuration} sec - Screen ${exScreen}</p>`;
+      });
+      if (globalRestSettings)
+        overviewHTML += `<p><strong>Rest:</strong> ${globalRestSettings.duration} sec, repeated ${globalRestSettings.count} time(s)</p>`;
+      workoutOverviewDiv.innerHTML = overviewHTML;
+    }
+    function showStep(step) {
+      document.querySelectorAll('.modal-step').forEach(s => s.style.display = 'none');
+      document.getElementById('step-' + step).style.display = 'block';
+      backStepBtn.style.display = step === 1 ? 'none' : 'inline-block';
+      nextStepBtn.style.display = step === 4 ? 'none' : 'inline-block';
+      confirmWorkoutBtn.style.display = step === 4 ? 'inline-block' : 'none';
+    }
+    nextStepBtn.addEventListener('click', () => {
+      if (currentStep === 1) {
+        if (!workoutNameInput.value.trim()) { alert('Workout name required.'); return; }
+        currentStep = 2;
+        showStep(currentStep);
+      } else if (currentStep === 2) {
+        if (!document.querySelectorAll('.exercise-field').length) { alert('Add at least one exercise.'); return; }
+        currentStep = 3;
+        showStep(currentStep);
+      } else if (currentStep === 3) {
+        const restDur = parseInt(document.getElementById('restDurationInput').value);
+        const restCt = parseInt(document.getElementById('restCountInput').value);
+        if (restDur < 1 || restCt < 1) { alert('Valid rest settings required.'); return; }
+        globalRestSettings = { duration: restDur, count: restCt };
+        currentStep = 4;
+        generateWorkoutOverview();
+        showStep(currentStep);
+      }
+    });
+    backStepBtn.addEventListener('click', () => {
+      if (currentStep > 1) { currentStep--; showStep(currentStep); }
+    });
+    confirmWorkoutBtn.addEventListener('click', saveWorkout);
+
+    // Exercise Template and Edit Modal
+    function saveExerciseTemplate(field) {
+      const name = field.querySelector('.exercise-name').value.trim();
+      const duration = parseInt(field.querySelector('.exercise-duration').value);
+      const screen = field.querySelector('.exercise-screen').value;
+      if (!name || isNaN(duration) || duration < 1) { alert('Valid exercise details required.'); return; }
+      savedExercises.push({ name, duration, screen });
+      saveSavedExercises();
+      alert('Exercise template saved!');
+    }
+    function addExerciseField() {
+      exerciseCount++;
+      const div = document.createElement('div');
+      div.className = 'input-group exercise-field';
+      div.innerHTML = `
+        <label>Exercise ${exerciseCount}</label>
+        <div style="display: flex; gap: 10px;">
+          <input type="text" class="exercise-name" placeholder="Exercise name" style="flex: 2;">
+          <input type="number" class="exercise-duration" placeholder="Duration (sec)" min="1" value="30" style="flex: 1;">
+          <select class="exercise-screen" style="flex: 1;">
+            <option value="1">Screen 1</option>
+            <option value="2">Screen 2</option>
+            <option value="3">Screen 3</option>
+            <option value="4">Screen 4</option>
+          </select>
+          <button class="action-btn save-exercise-template-btn" style="margin-left:10px;">Save</button>
+        </div>
+      `;
+      exerciseFields.appendChild(div);
+      div.querySelector('.save-exercise-template-btn').addEventListener('click', () => saveExerciseTemplate(div));
+    }
+    function openEditExerciseModal(index) {
+      editingSavedExerciseIndex = index;
+      const ex = savedExercises[index];
+      editExerciseNameInput.value = ex.name;
+      editExerciseDurationInput.value = ex.duration;
+      editExerciseScreenSelect.value = ex.screen;
+      exerciseModal.style.display = 'flex';
+    }
+    closeExerciseModalBtn.addEventListener('click', () => { exerciseModal.style.display = 'none'; editingSavedExerciseIndex = null; });
+    cancelEditExerciseBtn.addEventListener('click', () => { exerciseModal.style.display = 'none'; editingSavedExerciseIndex = null; });
+    saveEditExerciseBtn.addEventListener('click', () => {
+      const name = editExerciseNameInput.value.trim();
+      const duration = parseInt(editExerciseDurationInput.value);
+      const screen = editExerciseScreenSelect.value;
+      if (!name || isNaN(duration) || duration < 1) { alert('Enter valid details.'); return; }
+      if (editingSavedExerciseIndex !== null) {
+        savedExercises[editingSavedExerciseIndex] = { name, duration, screen };
+        saveSavedExercises();
+        renderExercisesListPage();
+        exerciseModal.style.display = 'none';
+        editingSavedExerciseIndex = null;
+      }
+    });
+
+    // NEW: Populate saved exercise dropdown
+    function populateSavedExerciseSelect() {
+      const select = document.getElementById('saved-exercise-select');
+      select.innerHTML = `<option value="">-- Select saved exercise --</option>`;
+      savedExercises.forEach((ex, idx) => {
+        select.innerHTML += `<option value="${idx}">${ex.name} - ${ex.duration} sec - Screen ${ex.screen}</option>`;
+      });
+    }
+    // NEW: Add saved exercise into fields
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('add-saved-exercise-btn').addEventListener('click', () => {
+        const idx = document.getElementById('saved-exercise-select').value;
+        if (idx === "") return;
+        const ex = savedExercises[idx];
+        exerciseCount++;
+        const div = document.createElement('div');
+        div.className = 'input-group exercise-field';
+        div.innerHTML = `
+          <label>Exercise ${exerciseCount}</label>
+          <div style="display: flex; gap: 10px;">
+            <input type="text" class="exercise-name" placeholder="Exercise name" value="${ex.name}" style="flex: 2;">
+            <input type="number" class="exercise-duration" placeholder="Duration (sec)" min="1" value="${ex.duration}" style="flex: 1;">
+            <select class="exercise-screen" style="flex: 1;">
+              <option value="1" ${ex.screen == "1" ? "selected" : ""}>Screen 1</option>
+              <option value="2" ${ex.screen == "2" ? "selected" : ""}>Screen 2</option>
+              <option value="3" ${ex.screen == "3" ? "selected" : ""}>Screen 3</option>
+              <option value="4" ${ex.screen == "4" ? "selected" : ""}>Screen 4</option>
+            </select>
+            <button class="action-btn save-exercise-template-btn" style="margin-left:10px;">Save</button>
+          </div>
+        `;
+        document.getElementById('exercise-fields').appendChild(div);
+        div.querySelector('.save-exercise-template-btn').addEventListener('click', () => saveExerciseTemplate(div));
+      });
+    });
+
+    // --- Toggle Time Display for Screen 4, unchanged ---
+    let screenModes = { "4": "exercises" };
+    let timeIntervals = {};
+    document.querySelectorAll('.toggle-mode-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const screenId = this.getAttribute('data-screen');
+        if (screenModes[screenId] === "exercises") {
+          screenModes[screenId] = "time";
+          this.textContent = "Switch to Exercise Display";
+          startTimeDisplay(screenId);
+        } else {
+          screenModes[screenId] = "exercises";
+          this.textContent = "Switch to Time Display";
+          stopTimeDisplay(screenId);
+          document.querySelector(`#screen-${screenId} .exercises-container`).textContent = 'No content';
+        }
+      });
+    });
+    function startTimeDisplay(screenId) {
+      const container = document.querySelector(`#screen-${screenId} .exercises-container`);
+      timeIntervals[screenId] = setInterval(() => {
+        const now = new Date();
+        container.innerHTML = `<div style="font-size: 48px; text-align: center;">${now.toLocaleTimeString()}</div>`;
+      }, 1000);
+    }
+    function stopTimeDisplay(screenId) {
+      if (timeIntervals[screenId]) { clearInterval(timeIntervals[screenId]); delete timeIntervals[screenId]; }
+    }
+
+    // --- Navigation Event Listeners ---
+    createWorkoutBtn.addEventListener('click', openModal);
+    showExercisesBtn.addEventListener('click', () => {
+      workoutListView.style.display = 'none';
+      exercisesListView.style.display = 'block';
+      renderExercisesListPage();
+    });
+    backToHomeBtn.addEventListener('click', () => {
+      exercisesListView.style.display = 'none';
+      workoutListView.style.display = 'block';
+    });
+    closeModalBtn.addEventListener('click', closeModal);
+    cancelWorkoutBtn.addEventListener('click', closeModal);
+    addExerciseBtn.addEventListener('click', addExerciseField);
+    backBtn.addEventListener('click', () => {
+      timerView.style.display = 'none';
+      workoutListView.style.display = 'block';
+      resetTimer();
+    });
+    startBtn.addEventListener('click', startFullSequence);
+    resetBtn.addEventListener('click', resetTimer);
+
+    // --- Initial Load ---
+    document.addEventListener('DOMContentLoaded', () => {
+      userSelectView.style.display = 'block';
+      workoutListView.style.display = 'none';
+      exercisesListView.style.display = 'none';
+      timerView.style.display = 'none';
+      loadUsersFromLocalStorage();
+      renderUserList();
+      loadWorkoutsFromLocalStorage();
+      renderWorkoutList();
+      loadSavedExercises();
+      const savedCurrentUser = localStorage.getItem('currentUser');
+      if (savedCurrentUser) {
+        currentUser = JSON.parse(savedCurrentUser);
+        currentUserNameSpan.textContent = currentUser.name;
+        userSelectView.style.display = 'none';
+        workoutListView.style.display = 'block';
+      }
+      populateSavedExerciseSelect();
+    });
+  </script>
+</body>
+</html>
